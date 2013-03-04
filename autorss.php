@@ -22,6 +22,7 @@
  * История версий:
  * 6.0.8 (от 04.03.2013)
  * - Добавлен noindex к ссылке.
+ * - Исправлен косяк с неправильным ЧПУ, если в загловке новости присутствовал знак #.
  * 
  * 6.0.7 (от 03.03.2013)
  * - Исправил адрес дефолтной заглушки, заменил {THEME} на прямой путь (имя шаблона берётся из настроек dle)/
@@ -479,7 +480,7 @@ foreach ($rssList as $rssline) {
 			$short_story = stripslashes($content['short']);
 			$full_story  = stripslashes($content['full']);
 			
-			$alt_name = strtolower(translit(textLimit(str_replace(array("[", "]"), "", $title), $chpu_cut, false)));
+			$alt_name = strtolower(translit(textLimit(str_replace(array("[", "]", "#"), "", $title), $chpu_cut, false)));
 
 			/**
 			 * Определяем имя пользователя, от которого будет добавляться новость (по умолчанию @$author_login)
