@@ -3,7 +3,7 @@
  ==========================================================
  Название модуля: AutoRSSImport for DLE 9.8 (так же должен работать и на 9.6-9.7)
  ----------------------------------------------------------
- Версия: 6.0 релиз от 02.03.2012
+ Версия: 6.0 релиз от 04.03.2012
  ---------------------------------------------------------
  Правообладатель: Виталий Чуяков (tcse-cms.com)
  ---------------------------------------------------------
@@ -20,6 +20,8 @@
  ==========================================================
  * 
  * История версий:
+ * 6.0.8 (от 04.03.2013)
+ * - Добавлен noindex к ссылке.
  * 
  * 6.0.7 (от 03.03.2013)
  * - Исправил адрес дефолтной заглушки, заменил {THEME} на прямой путь (имя шаблона берётся из настроек dle)/
@@ -102,7 +104,7 @@ define('PASS', '123456'); // пароль для запуска.
 $pass = PASS;
 
 if(empty($_REQUEST['pass']) || $_REQUEST['pass'] != $pass) {
-  die('что-то не так');
+	die('что-то не так');
 }
 
 @error_reporting(E_ALL ^ E_NOTICE);
@@ -448,7 +450,7 @@ foreach ($rssList as $rssline) {
 			if($pseudoLinks == true) {
 				$addSourceLink    = $source_text.": <span class=\"link\" title=\"Источник публикаци\" data-target-".$source_target."=\"" . $content['link'] . "\">" . $sourceLink[0] . "</span>";
 			} else {
-				$addSourceLink    = $source_text.": <a rel=\"nofollow\" class=\"link\" title=\"Источник публикаци\" href=\"" . $content['link'] . "\" target=\"_".$source_target."\">" . $sourceLink[0] . "</a>";
+				$addSourceLink    = $source_text.": <!--noindex--><a rel=\"nofollow\" class=\"link\" title=\"Источник публикаци\" href=\"" . $content['link'] . "\" target=\"_".$source_target."\">" . $sourceLink[0] . "</a><!--/noindex-->";
 			}
 			
 			$shortText        .= $addSourceLink;		
