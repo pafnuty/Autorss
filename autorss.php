@@ -3,7 +3,7 @@
  =========================================================
  Название модуля: AutoRSSImport for DLE 9.8 (так же должен работать и на 9.6-9.7)
  ---------------------------------------------------------
- Версия: 6.0 релиз от 04.03.2012
+ Версия: 6.0 релиз от 06.03.2012
  ---------------------------------------------------------
  Правообладатель: Виталий Чуяков (tcse-cms.com)
  ---------------------------------------------------------
@@ -20,6 +20,10 @@
  ==========================================================
  * 
  * История версий:
+ * 
+ * 6.0.9 (от 06.03.2013)
+ * - Исправления после проверки Кирилла.
+ * 
  * 6.0.8 (от 04.03.2013)
  * - Добавлен noindex к ссылке.
  * - Исправлен косяк с неправильным ЧПУ, если в загловке новости присутствовал знак #.
@@ -51,7 +55,7 @@
  * - Поправил косяк с ошибкой MySQL при наличи в новости одинакрной кавычки.
  * 
  * 6.0.2b (от 26.02.2013)
- * - Добавлена функция safeParce - для удобства, чтоб одно и тоже не писать по сто раз.
+ * - Добавлена функция safeParse - для удобства, чтоб одно и тоже не писать по сто раз.
  * - Добавлен пароль для запуска скрипта. Пременная $pass.
  * - Новости в БД добавляются с текущей датой - почему то не работает дата из канала (возможно я что-то не то делаю).
  * - Добавил вывод ссылок на добавленные новости по завершению работы скрипта (отключаемо).
@@ -169,7 +173,7 @@ function create_metatags($story)
 	$keyword_count = 20;
 	$newarr = array();
 	$headers = array();
-	$quotes = array("\x27","\x22","\x60","\t",'\n','\r',"\n","\r",'\\',"'",",",".","/","¬","#",";",":","@","~","[","]","{","}","=","-","+",")","(","*","&","^","%","$","<",">","?","!",'"');
+	$quotes = array(",",".","¬","#",";",":","@","~","=","-","+",")","(","*","&","^","%","$","<",">","?","!",'"');
 	$fastquotes = array("\x27","\x22","\x60","\t","\n","\r",'"',"'",'\r','\n',"/","\\","{","}","[","]");
 	
 	$story = preg_replace("'\[hide\](.*?)\[/hide\]'si", "", $story);
@@ -195,7 +199,6 @@ function create_metatags($story)
 	$arr = array_count_values($newarr);
 	arsort($arr);
 	$arr = array_keys($arr);
-	$total = count($arr);
 	$offset = 0;
 	$arr = array_slice($arr, $offset, $keyword_count);
 	$headers['keywords'] = $dle_api->db->safesql(implode(", ", $arr));
@@ -231,6 +234,7 @@ function generateHash()
 
 function textLimit($data, $count = '500', $showDots = true)
 {
+	global $config;
 	$hellip = ($showDots == true) ? '&hellip;' : '' ;
 	$data = stripslashes(trim(strip_tags($data, '<br>')));
 	$data = trim(str_replace( array('<br>','<br />','<br />'), ' ', $data));
@@ -267,7 +271,6 @@ function translit($string){
     "ь"=>"","Ь"=>"","ъ"=>"","Ъ"=>""
     );
     return strtr($string, $replace);
-    // return $str = iconv ( "UTF-8", "UTF-8//IGNORE", strtr ( $string, $replace ) );
 }
 
 /**
@@ -275,7 +278,7 @@ function translit($string){
  * @param $data - входящая строка
  * @return обработанная строка
  */
-function safeParce($data)
+function safeParse($data)
 {
 	$data = str_replace("'", '&#039;', str_replace(array("\t","\n","\r"),"", trim($data)));
 	return $data;
@@ -295,9 +298,8 @@ function newUserRegister($login, $password, $email, $group)
 	if( preg_match( "/[\||\'|\<|\>|\[|\]|\"|\!|\?|\$|\@|\/|\\\|\&\~\*\{\+]/", $login ) ) return -1;
 
 	$password = md5( md5( $password ) );
-	$not_allow_symbol = array ("\x22", "\x60", "\t", '\n', '\r', "\n", "\r", '\\', ",", "/", "¬", "#", ";", ":", "~", "[", "]", "{", "}", ")", "(", "*", "^", "%", "$", "<", ">", "?", "!", '"', "'", " " );
 	$group = intval( $group );
-	$now = time();
+	$now = time() + ($config['date_adjust'] * 60);
 	$q = $db->query( "insert into " . USERPREFIX . "_users (email, password, name, user_group, reg_date) VALUES ('$email', '$password', '$login', '$group', '$now')" );
 	return 1;
 }	
@@ -392,7 +394,7 @@ foreach ($rssList as $rssline) {
 
 
 			// определяем title тут потому, что он используется как alt для картинки
-			$title = safeParce($content['title']);
+			$title = safeParse($content['title']);
 			
 			$imageUrl = $noimage;
 			// Вылавливаем URL первой картинки
@@ -401,11 +403,10 @@ foreach ($rssList as $rssline) {
 				// Адрес первой картинки в новости
 				$imageUrl = $m[1][0]; // @TODO - добавить возможность выбора номера картинки (вряд ли это нужно, но всёже)
 			}		
-				$imageTag = '<img src="'.$imageUrl.'" alt="'.$title.'"> ';
+				$imageTag = '<img src="'.$imageUrl.'" alt="'.$title.'" /> ';
 
-			// $shortText = $imageTag.$shortText;
 			// Обрезанная краткая новость
-			$content['description'] = safeParce($content['description']);
+			$content['description'] = safeParse($content['description']);
 			$shortText = $imageTag.' '.textLimit($content['description'], $text_limit);
 
 			// Полная новость с уделённым форматированием
@@ -413,10 +414,13 @@ foreach ($rssList as $rssline) {
 
 
 			// Сложный процесс превращения категорий, приходящих с RSS тегов DLE
-			$strCat = strtolower(str_replace("\n", ",", str_replace("\r","",str_replace("\t","", trim($content['category'])))));
-			$arrCat = explode(',', $strCat);
-			$arrCat = array_unique($arrCat);
-			$contentTags = implode(', ', $arrCat);
+			$contentTags = '';
+			if ($content['category'] !='') {
+				$strCat = strtolower(str_replace("\n", ",", str_replace("\r","",str_replace("\t","", trim($content['category'])))));
+				$arrCat = explode(',', $strCat);
+				$arrCat = array_unique($arrCat);
+				$contentTags = implode(', ', $arrCat);
+			}
 			
 			/**
 			 * Подготовка содержимого
@@ -424,7 +428,7 @@ foreach ($rssList as $rssline) {
 
 			// Формирование ссылок на источник
 			$sourceLink       = explode(',', $rssline['description']);
-			$content['link']  = safeParce($content['link']);
+			$content['link']  = safeParse($content['link']);
 			
 			if($pseudoLinks == true) {
 				$addSourceLink    = $source_text.": <span class=\"link\" title=\"Источник публикаци\" data-target-".$source_target."=\"" . $content['link'] . "\">" . $sourceLink[0] . "</span>";
@@ -447,7 +451,6 @@ foreach ($rssList as $rssline) {
 			$allow_comm   = intval($rssline['allow_comm']);
 			$allow_main   = intval($rssline['allow_main']);
 			$allow_rating = intval($rssline['allow_rating']);
-			$text_type    = intval($rssline['text_type']);
 			$lastdate     = $xml->lastdate;
 		
 
@@ -455,8 +458,8 @@ foreach ($rssList as $rssline) {
 			 * Теперь готовим контент для записи в БД	
 			 */
 
-			$short_story = stripslashes($content['short']);
-			$full_story  = stripslashes($content['full']);
+			$short_story = $content['short'];
+			$full_story  = $content['full'];
 			
 			$alt_name = strtolower(translit(textLimit(str_replace(array("[", "]", "#"), "", $title), $chpu_cut, false)));
 
@@ -464,12 +467,12 @@ foreach ($rssList as $rssline) {
 			 * Определяем имя пользователя, от которого будет добавляться новость (по умолчанию @$author_login)
 			 */
 			if ($allowNewUsers == true && $content['author'] !='' && $test == false) {
-				$curUser = $dle_api->take_user_by_name(safeParce($content['author']), 'name');
+				$curUser = $dle_api->take_user_by_name(safeParse($content['author']), 'name');
 
 				$newsAuthor = $curUser['name'];
 			
 				if($curUser == false) {
-					$newUser = $db->safesql(safeParce($content['author']));
+					$newUser = $db->safesql(safeParse($content['author']));
 					$translAuthor = translit($newUser);
 					$password = textLimit($translAuthor, 3, false).'_'.generateHash();
 					$email = trim($translAuthor.'@'.str_replace(array('http://', '/'), '', $config['http_home_url']));
@@ -502,9 +505,7 @@ foreach ($rssList as $rssline) {
 				$row['id'] = $dle_api->db->insert_id();
 				
 				$db->query("INSERT INTO ".PREFIX."_post_extras (news_id, allow_rate, votes, disable_index, access) VALUES('{$row['id']}', '$allow_rating', '0', '0', '')");				
-
-					// $db->query("UPDATE ".PREFIX."_images set news_id='{$row['id']}' where author = '{$isUser['user_id']}' AND news_id = '0'");
-					$db->query("UPDATE " . USERPREFIX . "_users set news_num=news_num+1 where name='{$newsAuthor}'");
+				$db->query("UPDATE " . USERPREFIX . "_users set news_num=news_num+1 where name='{$newsAuthor}'");
 
 				
 				if ($tags != "") {
