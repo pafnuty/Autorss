@@ -425,7 +425,7 @@ foreach ($rssList as $rsskey=>$rssline) {
 			$contentTags = '';
 			if ($content['category'] !='') {
 				$strCat = strtolower(str_replace("\n", ",", str_replace("\r","",str_replace("\t","", trim($content['category'])))));
-				$arrCat = explode(',', $strCat);
+				$arrCat = explode(',', safeParse($strCat));
 				$arrCat = array_unique($arrCat);
 				$contentTags = implode(', ', $arrCat);
 			}
