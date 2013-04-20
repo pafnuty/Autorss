@@ -424,8 +424,8 @@ foreach ($rssList as $rsskey=>$rssline) {
 			// Сложный процесс превращения категорий, приходящих с RSS тегов DLE
 			$contentTags = '';
 			if ($content['category'] !='') {
-				$strCat = strtolower(str_replace("\n", ",", str_replace("\r","",str_replace("\t","", trim($content['category'])))));
-				$arrCat = explode(',', safeParse($strCat));
+				$strCat = strtolower(str_replace("\n", ",", str_replace(array("\r","\t", "'", '"', "`"),"",trim($content['category']))));
+				$arrCat = explode(',', $strCat);
 				$arrCat = array_unique($arrCat);
 				$contentTags = implode(', ', $arrCat);
 			}
