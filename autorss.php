@@ -179,7 +179,7 @@ function textLimit($data, $count = '500', $showDots = true)
 function translit($string){
     $replace = array(
     /*--*/
-    "»"=>"","«"=>"","+"=>"","/"=>"-",'"'=>"","'"=>"","["=>"","]"=>"",
+    "&"=>"-","»"=>"","«"=>"","+"=>"","/"=>"-",'"'=>"","'"=>"","["=>"","]"=>"",
     "#"=>"","?"=>"",":"=>"",";"=>"","("=>"",")"=>"","$"=>"",
     ","=>"","."=>""," "=>"-","а"=>"a","б"=>"b","в"=>"v","г"=>"g","д"=>"d","е"=>"e",
     "ё"=>"yo","ж"=>"j","з"=>"z","и"=>"i","й"=>"i","к"=>"k","л"=>"l", "м"=>"m",
@@ -440,9 +440,9 @@ foreach ($rssList as $rsskey=>$rssline) {
 			$content['link']  = safeParse($content['link']);
 			
 			if($pseudoLinks == true) {
-				$addSourceLink    = $source_text.": <span class=\"link\" title=\"Источник публикаци\" data-target-".$source_target."=\"" . $content['link'] . "\">" . $sourceLink[0] . "</span>";
+				$addSourceLink    = $source_text.": <span class=\"link\" title=\"Источник публикации\" data-target-".$source_target."=\"" . $content['link'] . "\">" . $sourceLink[0] . "</span>";
 			} else {
-				$addSourceLink    = $source_text.": <!--noindex--><a rel=\"nofollow\" class=\"link\" title=\"Источник публикаци\" href=\"" . $content['link'] . "\" target=\"_".$source_target."\">" . $sourceLink[0] . "</a><!--/noindex-->";
+				$addSourceLink    = $source_text.": <!--noindex--><a rel=\"nofollow\" class=\"link\" title=\"Источник публикации\" href=\"" . $content['link'] . "\" target=\"_".$source_target."\">" . $sourceLink[0] . "</a><!--/noindex-->";
 			}
 			
 			$shortText        .= $addSourceLink;		
