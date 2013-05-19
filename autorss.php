@@ -3,7 +3,7 @@
  =========================================================
  Название модуля: AutoRSSImport for DLE 9.8 (так же должен работать и на 9.6-9.7)
  ---------------------------------------------------------
- Версия: 6.0 релиз от 13.04.2012
+ Версия: 6.1 релиз от 19.05.2012
  ---------------------------------------------------------
  Правообладатель: Виталий Чуяков (tcse-cms.com)
  ---------------------------------------------------------
@@ -314,21 +314,21 @@ foreach ($rssList as $rsskey=>$rssline) {
 	// Тянуть картинки себе на сайт
 	$grab_img      = (isset($rssSettings['grab_img']))      ? $rssSettings['grab_img']      : true;
 	// Размер уменьшеных картинок, можно задавать как 200x150, так и просто 250
-	$imgSize       = (isset($rssSettings['imgSize']))       ? $rssSettings['imgSize']       : '200';
+	$imgSize       = (isset($rssSettings['imgSize']))       ? $rssSettings['imgSize']       : '400x400';
 	// Тип создания уменьшенных изображений (exact, portrait, landscape, auto, crop)
 	$resizeType    = (isset($rssSettings['resizeType']))    ? $rssSettings['resizeType']    : 'auto';
 
 	
 	// Показываем подробное содержание канала
 	if ($fulldebug) {
+
 		echo "<h2>".$rssList[$rsskey]['id']." - ".$rssList[$rsskey]['description']."</h2>";
 		echo "<div style='display:none;'>";
-		echo "<pre class='dle-pre'>"; print_r($rssSettings); echo "</pre>";		
+		echo "<pre class='dle-pre' data-text='Настройки канала'>"; print_r($rssSettings); echo "</pre>";		
 		foreach ($xml->content as $xmlval) {
 			echo "<pre class='dle-pre' data-text='Общая информация'>"; print_r("title: ".$xmlval['title']."<br>link: <a href='".trim($xmlval['link'])."' target='_blank'>".trim($xmlval['link'])."</a><br>author: ".$xmlval['author']); echo "</pre>";
 			echo "<pre class='dle-pre' data-text='Тело статьи'>"; print_r(htmlspecialchars($xmlval['description'])); echo "</pre>";
 		}
-		// echo "<pre class='dle-pre' >"; print_r($xml); echo "</pre>";
 		echo "</div>";
 	}
 
@@ -569,7 +569,7 @@ foreach ($rssList as $rsskey=>$rssline) {
 				$addedNews = $dle_api->db->super_query("SELECT id, title FROM ".PREFIX."_post WHERE title='" . $title . "'");
 				$qi++;
 				if(!empty($addedNews)) {
-					$addedNewsLink .= '<li><a href="/index.php?newsid='.$addedNews['id'].'" target="_blank">'.$addedNews['title'].'</a></li>';
+					$addedNewsLink .= '<li><a class="newslink" href="/index.php?newsid='.$addedNews['id'].'" target="_blank">'.$addedNews['title'].'</a></li>';
 				}
 			}
 
@@ -588,7 +588,6 @@ foreach ($rssList as $rsskey=>$rssline) {
 
 // Формирование отчёта о работе скрипта.
 $result = "Добавлено: " . $addindex . " новостей.<br /><ol>".$addedNewsLink."</ol><hr />Новостей содержащих некорректные данные: " . $addbadindex."<br /><ol>".$badIndexTitle."</ol><br /><a href=\"/\">Вернуться на главную</a>";
-
 // Отправка Персонального сообщения с результатами работы скрипта админу.
 if($sendPM == true && $test == false) {
 	$pmResult = 'Обновления от '.$thistime.'<hr />'.$result;
@@ -601,32 +600,70 @@ if($sendPM == true && $test == false) {
 		$result = $result.'<br />Сообщение админу <span style="color: red;">НЕ отправлено</span>.';
 	}
 }
-	
+
 clear_cache();
+echo <<<HTML
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Автоимпорт новостей</title>
+		<style>pre{background:#fdf6e3;border-color:rgba(0,0,0,0.3);border-style:solid;border-width:30px 2px 2px;color:#586e75;display:block;font:normal 14px/20px Consolas,'Courier New',monospace;padding:20px;margin:20px;position:relative;text-shadow:0 1px 1px #fff;-webkit-border-radius:5px;border-radius:5px;-moz-box-shadow:inset 0 -1px 10px 0 rgba(0,0,0,0.1),inset 0 1px 0 0 rgba(0,0,0,0.5),0 0 30px 0 rgba(255,255,255,0.5);box-shadow:inset 0 -1px 10px 0 rgba(0,0,0,0.1),inset 0 1px 0 0 rgba(0,0,0,0.5),0 0 30px 0 rgba(255,255,255,0.5);white-space:pre;white-space:pre-wrap;word-break:break-all;word-wrap:break-word}pre::-moz-selection{background:#073642;text-shadow:0 1px 1px #000;color:#fff}pre::selection{background:#073642;text-shadow:0 1px 1px #000;color:#fff}pre:after{color:#fff;content:attr(data-text);font:normal 16px/30px Consolas,'Courier New',monospace;height:30px;left:20px;position:absolute;right:20px;text-shadow:0 1px 3px rgba(0,0,0,0.7);top:-30px}h2{cursor:pointer;}</style>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	 	<script>
+	 			$("h2").click(function () {
+					nextDiv = $(this).next("div");
+	 				if ($(this).hasClass('current')) {
+						$("h2").removeClass('current').next().hide();
+	 				} else {
+						$("h2").removeClass('current').next().hide();
+	 					$(this).addClass('current');
+						nextDiv.show(); 					
+	 				};
+				});
+			}); 
+		</script>
+
+	</head>
+	<body>
+HTML;
+
 echo $result;
 
 if ($test == true) {
+	echo '<br /><b>Отладка:</b><br /><ol>'.$testcontent.'</ol>';
+}
+$statInfo = '<p style="color:red;">Время выполнения: <b>'. round((microtime(true) - $start), 6). '</b> c. <br /> Затраты памяти: <b>'.$mem_usg.'</b> <br />Кол-во запросов: <b>~'.$qi.'</b> <br />Добавлено новых пользователей: <b>'.$userindex.'</b></p>';
 echo <<<HTML
-<title>Автоимпорт новостей</title>
-<style>pre{background:#fdf6e3;border-color:rgba(0,0,0,0.3);border-style:solid;border-width:30px 2px 2px;color:#586e75;display:block;font:normal 14px/20px Consolas,'Courier New',monospace;padding:20px;margin:20px;position:relative;text-shadow:0 1px 1px #fff;-webkit-border-radius:5px;border-radius:5px;-moz-box-shadow:inset 0 -1px 10px 0 rgba(0,0,0,0.1),inset 0 1px 0 0 rgba(0,0,0,0.5),0 0 30px 0 rgba(255,255,255,0.5);box-shadow:inset 0 -1px 10px 0 rgba(0,0,0,0.1),inset 0 1px 0 0 rgba(0,0,0,0.5),0 0 30px 0 rgba(255,255,255,0.5);white-space:pre;white-space:pre-wrap;word-break:break-all;word-wrap:break-word}pre::-moz-selection{background:#073642;text-shadow:0 1px 1px #000;color:#fff}pre::selection{background:#073642;text-shadow:0 1px 1px #000;color:#fff}pre:after{color:#fff;content:attr(data-text);font:normal 16px/30px Consolas,'Courier New',monospace;height:30px;left:20px;position:absolute;right:20px;text-shadow:0 1px 3px rgba(0,0,0,0.7);top:-30px}h2{cursor:pointer;}</style>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
- 	<script> 
- 		jQuery(document).ready(function ($) {
- 			$("h2").click(function () {
-				nextDiv = $(this).next("div");
- 				if ($(this).hasClass('current')) {
-					$("h2").removeClass('current').next().hide();
- 				} else {
-					$("h2").removeClass('current').next().hide();
- 					$(this).addClass('current');
-					nextDiv.show(); 					
- 				};
-			});
-		}); 
-	</script>
-	<br /><b>Отладка:</b><br /><ol>$testcontent</ol>
+		$statInfo
+	</body>
+</html>
 HTML;
 
+
+// Отправляем email админу, если это разрешено.
+if($sendPM == true /*&& $test == false*/) {
+	if( $config['mail_pm'] ) {
+		include_once ENGINE_DIR . '/classes/mail.class.php';
+		$mail = new dle_mail( $config );
+		$mail_template = $db->super_query( "SELECT template FROM " . PREFIX . "_email WHERE name='pm' LIMIT 0,1" );
+		$mail_template['template'] = stripslashes($mail_template['template']);
+		$mail_template['template'] = str_replace("{%username%}", 'Админ', $mail_template['template']);
+		$mail_template['template'] = str_replace("{%date%}", 'только что', $mail_template['template']);
+		$mail_template['template'] = str_replace("{%fromusername%}", $author_login, $mail_template['template']);
+		$mail_template['template'] = str_replace("{%title%}", strip_tags(stripslashes($subj)), $mail_template['template']);
+		
+		$body = str_replace('\n', "", $pmResult.$statInfo);
+		$body = str_replace('\r', "", $body);
+		
+		$body = stripslashes(stripslashes($body));
+		$body = str_replace("<br />", "\n", $body);
+		$body = strip_tags($body);
+		
+		$mail_template['template'] = str_replace( "{%text%}", $body, $mail_template['template']);
+		$mail->send($mail->from, 'Отчёт AutoRss', $mail_template['template'] );
+		echo "email админу отправлен";
+	}
 }
-echo '<p style="color:red;">Время выполнения: <b>'. round((microtime(true) - $start), 6). '</b> c. <br /> Затраты памяти: <b>'.$mem_usg.'</b> <br />Кол-во запросов: <b>~'.$qi.'</b> <br />Добавлено новых пользователей: <b>'.$userindex.'</b></p>';
+
+
 ?>
