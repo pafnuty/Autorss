@@ -16,6 +16,8 @@ if(!defined('DATALIFEENGINE'))
   die("Hacking attempt!");
 }
 
+$rssid = $rssline['id'];
+
 if ($rssid == '3') {
 	if(preg_match_all('#<p>(.+?)</p>#is', $content['description'], $matches)) {
 		$content['description'] = $matches[0][0]; 
