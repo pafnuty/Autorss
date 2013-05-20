@@ -3,7 +3,7 @@
  =========================================================
  Название модуля: AutoRSSImport for DLE 9.8 (так же должен работать и на 9.6-9.7)
  ---------------------------------------------------------
- Версия: 6.1 релиз от 19.05.2012
+ Версия: 6.1 релиз от 20.05.2012
  ---------------------------------------------------------
  Правообладатель: Виталий Чуяков (tcse-cms.com)
  ---------------------------------------------------------
@@ -266,6 +266,7 @@ $addindex    = 0;
 $addbadindex = 0;
 $userindex = 0;
 foreach ($rssList as $rsskey=>$rssline) {
+
 	$xml = new xmlParser(stripslashes($rssline['url']), $rssline['max_news']);
 	if ($xml->rss_option == "UTF-8")
 		$xml->convert("UTF-8", strtolower($dle_api->dle_config['charset']));
@@ -430,7 +431,7 @@ foreach ($rssList as $rsskey=>$rssline) {
 				$arrCat = array_unique($arrCat);
 				$contentTags = implode(', ', $arrCat);
 			}
-			
+
 			/**
 			 * Подготовка содержимого
 			 */
@@ -610,6 +611,7 @@ echo <<<HTML
 		<style>pre{background:#fdf6e3;border-color:rgba(0,0,0,0.3);border-style:solid;border-width:30px 2px 2px;color:#586e75;display:block;font:normal 14px/20px Consolas,'Courier New',monospace;padding:20px;margin:20px;position:relative;text-shadow:0 1px 1px #fff;-webkit-border-radius:5px;border-radius:5px;-moz-box-shadow:inset 0 -1px 10px 0 rgba(0,0,0,0.1),inset 0 1px 0 0 rgba(0,0,0,0.5),0 0 30px 0 rgba(255,255,255,0.5);box-shadow:inset 0 -1px 10px 0 rgba(0,0,0,0.1),inset 0 1px 0 0 rgba(0,0,0,0.5),0 0 30px 0 rgba(255,255,255,0.5);white-space:pre;white-space:pre-wrap;word-break:break-all;word-wrap:break-word}pre::-moz-selection{background:#073642;text-shadow:0 1px 1px #000;color:#fff}pre::selection{background:#073642;text-shadow:0 1px 1px #000;color:#fff}pre:after{color:#fff;content:attr(data-text);font:normal 16px/30px Consolas,'Courier New',monospace;height:30px;left:20px;position:absolute;right:20px;text-shadow:0 1px 3px rgba(0,0,0,0.7);top:-30px}h2{cursor:pointer;}</style>
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	 	<script>
+	 		jQuery(document).ready(function($) {
 	 			$("h2").click(function () {
 					nextDiv = $(this).next("div");
 	 				if ($(this).hasClass('current')) {
