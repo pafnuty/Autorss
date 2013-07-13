@@ -62,7 +62,29 @@ if (isset($_REQUEST['nolinks'])) {
 }
 $start = microtime(true);
 $mem_usg = (function_exists("memory_get_peak_usage")) ? round(memory_get_peak_usage()/(1024*1024),2)."Мб" : "функция memory_get_peak_usage отключена на хостинге";
+/*
+private function makeTranslit( $st = FALSE, $lenght = 64 )
+ {
+  
+  if ( $st !== FALSE )
+  {
 
+      $st = mb_strtolower( $st, "utf-8" );
+      $st = preg_replace( "/&#(.+?);/", "", $st );
+      $st = preg_replace("/\s+/", "_", trim($st));
+      $st = preg_replace("/\W+/", "", $st);
+      $st = preg_replace("/_/", "-", $st);
+
+      return substr ( $st, 0, $lenght );
+
+  } else {
+
+   return FALSE;
+
+  }
+
+ }
+ */
 
 /**
  * Глобальные переменные и настройки 
