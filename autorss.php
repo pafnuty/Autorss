@@ -1,9 +1,9 @@
 <?php
 /**
  =========================================================
- Название модуля: AutoRSSImport for DLE 10.0 (так же должен работать и на 9.6-9.7)
+ Название модуля: AutoRSSImport for DLE 9.8 (так же должен работать и на 9.6-9.7)
  ---------------------------------------------------------
- Версия: 6.1.3 релиз от 06.11.2013
+ Версия: 6.1.4 релиз от 06.11.2013
  ---------------------------------------------------------
  Правообладатель: Виталий Чуяков (tcse-cms.com)
  ---------------------------------------------------------
@@ -40,12 +40,12 @@ $test = false;
 if (isset($_REQUEST['test'])) {
 	$test = true;
 }
-// Если прописать с адресной строке &fulldebug - будет показываться полный дебаг (исходые данные канала)
+// Если прописать с адресной строке &fulldebug - будет показываться полны дебаг (исходые данные канала)
 $fulldebug = false;
 if (isset($_REQUEST['fulldebug'])) {
 	$fulldebug = true;
 }
-// Если прописать с адресной строке &channelid=1,2,3 - будут обрабатываться только каналы с соответсствующим id
+// Если прописать с адресной строке &channelid=1,2,3 - будут обрабатыватьс только каналы с соответсствующим id
 $channelid = false;
 if (isset($_REQUEST['channelid'])) {
 	$channelid = true;
@@ -268,8 +268,6 @@ $userindex = 0;
 foreach ($rssList as $rsskey=>$rssline) {
 
 	$xml = new xmlParser(stripslashes($rssline['url']), $rssline['max_news']);
-	if (strtolower($xml->rss_charset) != strtolower($dle_api->dle_config['charset']))
-		$xml->convert();
 	$xml->pre_lastdate = $rssline['lastdate'];
 	$xml->pre_parse($rssline['date']);
 	
