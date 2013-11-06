@@ -1,9 +1,9 @@
 <?php
 /**
  =========================================================
- Название модуля: AutoRSSImport for DLE 9.8 (так же должен работать и на 9.6-9.7)
+ Название модуля: AutoRSSImport for DLE 10.0 (так же должен работать и на 9.6-9.7)
  ---------------------------------------------------------
- Версия: 6.1 релиз от 20.05.2012
+ Версия: 6.1.1 релиз от 06.11.2013
  ---------------------------------------------------------
  Правообладатель: Виталий Чуяков (tcse-cms.com)
  ---------------------------------------------------------
@@ -40,12 +40,12 @@ $test = false;
 if (isset($_REQUEST['test'])) {
 	$test = true;
 }
-// Если прописать с адресной строке &fulldebug - будет показываться полны дебаг (исходые данные канала)
+// Если прописать с адресной строке &fulldebug - будет показываться полный дебаг (исходые данные канала)
 $fulldebug = false;
 if (isset($_REQUEST['fulldebug'])) {
 	$fulldebug = true;
 }
-// Если прописать с адресной строке &channelid=1,2,3 - будут обрабатыватьс только каналы с соответсствующим id
+// Если прописать с адресной строке &channelid=1,2,3 - будут обрабатываться только каналы с соответсствующим id
 $channelid = false;
 if (isset($_REQUEST['channelid'])) {
 	$channelid = true;
@@ -69,7 +69,7 @@ $mem_usg = (function_exists("memory_get_peak_usage")) ? round(memory_get_peak_us
  * значения переменных для каналов указаны ниже
  */
 // Отправлять PM админу с информацией о работе скрипта.
-$sendPM = true;
+$sendPM = false;
 
 /**
  * Подключение к DLE
@@ -268,10 +268,8 @@ $userindex = 0;
 foreach ($rssList as $rsskey=>$rssline) {
 
 	$xml = new xmlParser(stripslashes($rssline['url']), $rssline['max_news']);
-	if ($xml->rss_option == "UTF-8")
-		$xml->convert("UTF-8", strtolower($dle_api->dle_config['charset']));
-	elseif ($xml->rss_charset != strtolower($dle_api->dle_config['charset']))
-		$xml->convert($xml->rss_charset, strtolower($dle_api->dle_config['charset']));
+	if (strtolower($xml->rss_charset) != strtolower($dle_api->dle_config['charset']))
+		$xml->convert();
 	$xml->pre_lastdate = $rssline['lastdate'];
 	$xml->pre_parse($rssline['date']);
 	
@@ -299,21 +297,21 @@ foreach ($rssList as $rsskey=>$rssline) {
 	// Кол-во символов в ЧПУ новости
 	$chpu_cut      = (isset($rssSettings['chpu_cut']))      ? $rssSettings['chpu_cut']      : '30';
 	// Имя пользователя под которым будут опубликованы новости из RSS
-	$author_login  = (isset($rssSettings['author_login']))  ? $rssSettings['author_login']  : 'eptit';
+	$author_login  = (isset($rssSettings['author_login']))  ? $rssSettings['author_login']  : 'rssBot';
 	// Разрешать добавление новых пользователей в БД, если их имя есть в rss-канале
 	$allowNewUsers = (isset($rssSettings['allowNewUsers'])) ? $rssSettings['allowNewUsers'] : true;
 	// Группа, в которую будут регистрироваться новые пользователи
 	$newUserGroup  = (isset($rssSettings['newUserGroup']))  ? $rssSettings['newUserGroup']  : '3';
 	// Надпись "Источник"
-	$source_text   = (isset($rssSettings['source_text']))   ? $rssSettings['source_text']   : "<hr class=\"separator\"> Источник";
+	$source_text   = (isset($rssSettings['source_text']))   ? $rssSettings['source_text']   : "<br /> Источник";
 	// Использовать вместо настоящей ссылки на источник псевдоссылку.
-	$pseudoLinks   = (isset($rssSettings['pseudoLinks']))   ? $rssSettings['pseudoLinks']   : true;
+	$pseudoLinks   = (isset($rssSettings['pseudoLinks']))   ? $rssSettings['pseudoLinks']   : false;
 	// Атрибут будет добавлен к data-* если используются псевдоссылки или к target="_*" если используются настоящие ссылки
 	$source_target = (isset($rssSettings['source_target'])) ? $rssSettings['source_target'] : 'blank';
 	// Отключить обаботку и парсинг картинки из канала?
 	$dasable_img   = (isset($rssSettings['dasable_img']))   ? $rssSettings['dasable_img']   : false;
 	// Тянуть картинки себе на сайт
-	$grab_img      = (isset($rssSettings['grab_img']))      ? $rssSettings['grab_img']      : true;
+	$grab_img      = (isset($rssSettings['grab_img']))      ? $rssSettings['grab_img']      : false;
 	// Размер уменьшеных картинок, можно задавать как 200x150, так и просто 250
 	$imgSize       = (isset($rssSettings['imgSize']))       ? $rssSettings['imgSize']       : '400x400';
 	// Тип создания уменьшенных изображений (exact, portrait, landscape, auto, crop)
